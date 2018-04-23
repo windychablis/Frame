@@ -26,7 +26,7 @@ class FirstViewModel: ViewModel() {
      */
     fun loadData(){
         var a=Math.random()
-        user?.postValue(User1("小虾米${a}",2))
+        user?.postValue(User1("MVVM${a}",2))
     }
 
 

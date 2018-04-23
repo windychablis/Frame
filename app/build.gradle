@@ -6,6 +6,10 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 
 android {
+    //正式环境
+    def API_PROD_HOST = "\"http://120.79.182.49:8082/\""
+    //开发环境
+    def API_DEV_HOST = "\"http://120.79.182.49:8082/\""
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.chablis.frame"
@@ -13,10 +17,27 @@ android {
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
+        buildConfigField("String", "API_HOST", "${API_DEV_HOST}")
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
+            //是否输出日志
+            buildConfigField "boolean", "LOG_DEBUG", "true"
+            // 移除无用的resource文件
+            shrinkResources false
+            //是否混淆
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            //测试包,设置识别码(个人理解)
+            applicationIdSuffix ".debug"
+            //是否输出日志
+            buildConfigField "boolean", "LOG_DEBUG", "true"
+            // 移除无用的resource文件
+            shrinkResources false
+            //是否混淆
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -27,14 +48,30 @@ android {
     kapt {
         generateStubs = true
     }
+
+    flavorDimensions "default"
+    productFlavors{
+        prod{
+            applicationIdSuffix ".prod"
+            //url动态替换,正式url
+            buildConfigField "String", "API_HOST", "${API_PROD_HOST}"
+            dimension "default"
+        }
+
+        dev{
+            applicationIdSuffix ".dev"
+            //url动态替换,正式url
+            buildConfigField "String", "API_HOST", "${API_DEV_HOST}"
+            dimension "default"
+        }
+    }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     implementation 'com.android.support:appcompat-v7:27.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-
     //Retrofit相关
     implementation(['com.squareup.okhttp3:logging-interceptor:3.9.0',//用于查看http请求时的log
                     'com.squareup.retrofit2:retrofit:2.3.0',
@@ -49,10 +86,9 @@ dependencies {
     implementation(['com.trello.rxlifecycle2:rxlifecycle-kotlin:2.2.0',
                     'com.trello.rxlifecycle2:rxlifecycle-components:2.2.0'])
     // alternatively, just ViewModel
-    implementation "android.arch.lifecycle:viewmodel:1.1.1"
-    implementation "android.arch.lifecycle:extensions:1.1.1"
+    implementation 'android.arch.lifecycle:viewmodel:1.1.1'
+    implementation 'android.arch.lifecycle:extensions:1.1.1'
     kapt "com.android.databinding:compiler:3.1.1"
-
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
